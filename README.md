@@ -2,6 +2,15 @@
 
 A quiet new tab for Chrome. Time, date, weather, currencies and your bookmarks — nothing else.
 
+[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/minima/ojkhgknfpdlpkcjamkkecokhinonipld)
+
+<p align="center">
+  <img src="docs/screenshots/newtab-light.png" width="780" alt="Minima new tab in light mode">
+</p>
+<p align="center">
+  <img src="docs/screenshots/newtab-dark.png" width="780" alt="Minima new tab in dark mode">
+</p>
+
 Built with [WXT](https://wxt.dev), Svelte 5, TypeScript and plain CSS. Every
 preference is stored in `chrome.storage.local`; there is no account, no sync
 server and no analytics.
