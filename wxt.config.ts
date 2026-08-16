@@ -11,7 +11,7 @@ export default defineConfig({
     homepage_url: 'https://github.com/gs-bhangu/minima',
     description:
       'A quiet new tab. Time, date, weather, currencies and your bookmarks — nothing else.',
-    permissions: ['storage', 'bookmarks', 'favicon'],
+    permissions: ['storage', 'bookmarks', 'favicon', 'search'],
     host_permissions: [
       'https://api.open-meteo.com/*',
       'https://geocoding-api.open-meteo.com/*',

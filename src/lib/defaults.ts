@@ -47,8 +47,6 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   search: {
     enabled: true,
-    engine: 'google',
-    customUrl: '',
     newTab: false,
     quickSwitch: true,
   },

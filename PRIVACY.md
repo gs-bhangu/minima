@@ -24,8 +24,9 @@ Only if you turn the feature on:
 | Currency rates | [Frankfurter](https://frankfurter.dev) | The currency codes you track |
 | Online tile icons | Google’s favicon service | The site address of each shortcut |
 
-Search and “ask an AI” open the engine you chose in a tab. Minima does not
-proxy those queries.
+The search field hands queries to Chrome’s Search API, which uses the
+search engine already set in the browser. Minima does not pick or replace
+that engine, and it does not proxy the query.
 
 Default setup: weather is on but has no place until you set one; currencies are
 off; tile icons use the browser’s local cache.

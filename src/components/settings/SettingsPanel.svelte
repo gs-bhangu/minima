@@ -18,7 +18,6 @@
   import WeatherSettings from './WeatherSettings.svelte';
   import { settings } from '../../lib/settings.svelte';
   import { ACCENTS } from '../../lib/defaults';
-  import { SEARCH_ENGINES } from '../../lib/search';
   import type {
     ClockFace,
     PanelPlacement,
@@ -94,17 +93,6 @@
     { value: 'medium', label: 'Sun, 26 Jul' },
     { value: 'short', label: '26/7/2026' },
     { value: 'iso', label: '2026-07-26' },
-  ];
-
-  const engineOptions = [
-    ...SEARCH_ENGINES.map((engine) => ({
-      value: engine.id,
-      label:
-        engine.kind === 'ai' && !engine.label.includes('AI')
-          ? `${engine.label} (AI)`
-          : engine.label,
-    })),
-    { value: 'custom', label: 'Custom…' },
   ];
 
   function exportSettings() {
@@ -337,22 +325,13 @@
       </Group>
 
       <Group title="Search">
-        <Row label="Search field">
+        <Row
+          label="Search field"
+          hint="Queries use the search engine set in Chrome’s settings."
+        >
           <Toggle bind:checked={config.search.enabled} label="Search field" />
         </Row>
         {#if config.search.enabled}
-          <Row label="Engine">
-            <Select bind:value={config.search.engine} options={engineOptions} label="Engine" />
-          </Row>
-          {#if config.search.engine === 'custom'}
-            <Row label="Query URL" hint="Use {'{q}'} where the search terms go." stacked>
-              <TextInput
-                bind:value={config.search.customUrl}
-                label="Query URL"
-                placeholder="https://example.com/search?q={'{q}'}"
-              />
-            </Row>
-          {/if}
           <Row
             label="Match shortcuts"
             hint="Suggest your own shortcuts as you type. Arrow keys pick one."

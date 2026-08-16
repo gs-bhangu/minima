@@ -3,24 +3,21 @@
   import TileIcon from './TileIcon.svelte';
   import { settings } from '../lib/settings.svelte';
   import { sections } from '../lib/sections.svelte';
-  import { SEARCH_ENGINES, engineById, resolveQuery } from '../lib/search';
+  import { resolveQuery } from '../lib/search';
   import { hostOf, looksLikeUrl } from '../lib/icons';
-  import type { ResolvedTile, SearchEngineId } from '../lib/types';
+  import type { ResolvedTile } from '../lib/types';
 
   const config = $derived(settings.current.search);
 
   let value = $state('');
   let focused = $state(false);
-  let picking = $state(false);
   let highlight = $state(-1);
-  let override = $state<SearchEngineId | null>(null);
   let input = $state<HTMLInputElement | null>(null);
 
   export function focus() {
     input?.focus();
   }
 
-  const engine = $derived(engineById(override ?? config.engine, config));
   const isAddress = $derived(looksLikeUrl(value));
 
   const matches = $derived.by<ResolvedTile[]>(() => {
@@ -41,7 +38,7 @@
     return found;
   });
 
-  const showMatches = $derived(focused && !picking && matches.length > 0);
+  const showMatches = $derived(focused && matches.length > 0);
 
   // Keep the highlight inside the current result list.
   $effect(() => {
@@ -54,27 +51,28 @@
     else window.location.href = url;
   }
 
-  function submit(event?: Event) {
+  async function submit(event?: Event) {
     event?.preventDefault();
     if (highlight >= 0 && matches[highlight]) {
       go(matches[highlight].url);
       return;
     }
-    go(resolveQuery(value, engine));
-  }
-
-  function chooseEngine(id: SearchEngineId) {
-    override = id;
-    picking = false;
-    if (value.trim()) submit();
-    else input?.focus();
+    const resolved = resolveQuery(value);
+    if (!resolved) return;
+    if (resolved.kind === 'url') {
+      go(resolved.url);
+      return;
+    }
+    await browser.search.query({
+      text: resolved.text,
+      disposition: config.newTab ? 'NEW_TAB' : 'CURRENT_TAB',
+    });
   }
 
   function onKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') {
       event.stopPropagation();
-      if (picking) picking = false;
-      else if (highlight >= 0) highlight = -1;
+      if (highlight >= 0) highlight = -1;
       else if (value) value = '';
       else input?.blur();
       return;
@@ -84,26 +82,11 @@
       event.preventDefault();
       const step = event.key === 'ArrowDown' ? 1 : -1;
       highlight = Math.max(-1, Math.min(matches.length - 1, highlight + step));
-      return;
-    }
-    // Alt+1…9 fires the query at a specific engine without leaving the keyboard.
-    if (event.altKey && /^[1-9]$/.test(event.key)) {
-      const target = SEARCH_ENGINES[Number(event.key) - 1];
-      if (target) {
-        event.preventDefault();
-        chooseEngine(target.id);
-      }
     }
   }
 </script>
 
-<svelte:window
-  onpointerdown={(event) => {
-    if (picking && !(event.target as HTMLElement)?.closest('.search-wrap')) picking = false;
-  }}
-/>
-
-<div class="search-wrap" class:focused={focused || picking}>
+<div class="search-wrap" class:focused>
   <form class="search" onsubmit={submit} role="search">
     <span class="icon"><Glyph name="search" size={15} /></span>
     <input
@@ -120,57 +103,11 @@
     />
 
     {#if isAddress}
-      <span class="chip static">Go</span>
-    {:else}
-      <button
-        class="chip"
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={picking}
-        title="Search with a different engine"
-        onclick={() => (picking = !picking)}
-      >
-        {engine.label}
-        <span class="caret" class:open={picking}><Glyph name="chevron" size={11} /></span>
-      </button>
+      <span class="chip">Go</span>
     {/if}
   </form>
 
-  {#if picking}
-    <div class="panel" role="menu">
-      {#each SEARCH_ENGINES as option, index (option.id)}
-        {#if index > 0 && option.kind !== SEARCH_ENGINES[index - 1].kind}
-          <div class="panel-label">Ask an AI</div>
-        {/if}
-        <button
-          class="option"
-          class:active={engine.id === option.id}
-          type="button"
-          role="menuitem"
-          onclick={() => chooseEngine(option.id)}
-        >
-          <span class="option-label">{option.label}</span>
-          {#if config.engine === option.id}<span class="tag">default</span>{/if}
-          {#if index < 9}<kbd>alt {index + 1}</kbd>{/if}
-        </button>
-      {/each}
-
-      {#if config.engine !== engine.id && engine.id !== 'custom'}
-        <div class="panel-foot">
-          <button
-            class="text-button"
-            type="button"
-            onclick={() => {
-              settings.current.search.engine = engine.id;
-              picking = false;
-            }}
-          >
-            Make {engine.label} the default
-          </button>
-        </div>
-      {/if}
-    </div>
-  {:else if showMatches}
+  {#if showMatches}
     <div class="panel">
       {#each matches as match, index (match.key)}
         <button
@@ -262,38 +199,15 @@
   .chip {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
     flex: none;
     height: 26px;
-    padding: 0 8px;
+    padding: 0 10px;
     border-radius: 999px;
     font-size: 10.5px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-faint);
     background: var(--surface);
-    transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
-  }
-
-  .chip:hover,
-  .chip[aria-expanded='true'] {
-    background: var(--accent-soft);
-    color: var(--accent-text);
-  }
-
-  .chip.static {
-    padding: 0 10px;
-  }
-
-  .caret {
-    display: flex;
-    color: inherit;
-    opacity: 0.7;
-    transition: transform var(--dur) var(--ease);
-  }
-
-  .caret.open {
-    transform: rotate(180deg);
   }
 
   .panel {
@@ -309,17 +223,6 @@
     box-shadow: var(--shadow);
     max-height: min(480px, 66vh);
     overflow-y: auto;
-  }
-
-  .panel-label {
-    padding: 8px 10px 4px;
-    font-size: 9.5px;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-faint);
-    border-top: 1px solid var(--line);
-    margin-top: 4px;
   }
 
   .option {
@@ -355,41 +258,9 @@
     filter: grayscale(var(--grayscale));
   }
 
-  .host,
-  .tag {
+  .host {
     flex: none;
     font-size: 10.5px;
     color: var(--text-faint);
-  }
-
-  .tag {
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    opacity: 0.8;
-  }
-
-  kbd {
-    flex: none;
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    letter-spacing: 0.02em;
-    color: var(--text-faint);
-    opacity: 0;
-  }
-
-  .option:hover kbd {
-    opacity: 0.8;
-  }
-
-  .panel-foot {
-    padding: 7px 10px 4px;
-    margin-top: 4px;
-    border-top: 1px solid var(--line);
-  }
-
-  @media (max-width: 460px) {
-    kbd {
-      display: none;
-    }
   }
 </style>

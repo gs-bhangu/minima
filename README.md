@@ -76,15 +76,9 @@ shortcut can instead use an emoji, one or two letters, or an image URL.
 
 **Search**
 
-- Google, Google Web only, DuckDuckGo, Bing, Brave, Ecosia, Startpage or a custom query
-  URL. Anything that looks like an address opens directly instead of being searched.
-  _Google Web only_ uses the `udm=14` filter, which strips AI overviews, carousels and rich
-  snippets down to plain results.
-- Ask an AI instead: Google AI Mode (`udm=50`), ChatGPT, Claude, Perplexity or Grok. Picking
-  one opens the answer or a fresh chat with your query already sent.
-- The engine name on the right of the bar is a picker, so you can send one query somewhere
-  else without changing your default. `Alt`+`1`…`9` fires the current query at an engine
-  directly, and the picker offers to promote your pick to the default.
+- A field for the web or an address. Queries go through Chrome’s Search API, so they
+  use the search engine already set in the browser. Anything that looks like an address
+  opens directly.
 - While you type, matching shortcuts appear under the bar. Arrow keys select one, `Enter`
   opens it.
 
@@ -128,6 +122,7 @@ select `.output/chrome-mv3`.
 | `storage`                                                     | Saving your settings and background locally      |
 | `bookmarks`                                                   | Reading bookmarks in bookmarks mode              |
 | `favicon`                                                     | Browser's local favicon cache for tile icons     |
+| `search`                                                      | The search field uses Chrome’s default engine    |
 | `api.open-meteo.com`, `geocoding-api.open-meteo.com`          | Weather and city lookup                          |
 | `ipapi.co`                                                    | Optional one-off location detection              |
 | `api.frankfurter.dev`                                         | Optional currency rates                          |
@@ -159,6 +154,7 @@ src/
     currencies.ts        currency labels and formatting
     clock.svelte.ts      shared ticker, pauses when the tab is hidden
     timezones.ts         world clock formatting
+    search.ts            address vs query; queries use chrome.search
   styles/app.css         reset, design tokens and shared primitives
 ```
 

@@ -24,21 +24,6 @@ export type PanelKey = 'todos' | 'notes';
 export type ClockFace = 'sans' | 'mono';
 export type DateFormat = 'long' | 'medium' | 'short' | 'iso';
 export type TempUnit = 'celsius' | 'fahrenheit';
-export type SearchEngineId =
-  | 'google'
-  | 'google-web'
-  | 'google-ai'
-  | 'duckduckgo'
-  | 'bing'
-  | 'brave'
-  | 'ecosia'
-  | 'startpage'
-  | 'chatgpt'
-  | 'claude'
-  | 'perplexity'
-  | 'grok'
-  | 'custom';
-
 /** Per-shortcut icon override. `auto` falls back to the favicon pipeline. */
 export interface IconOverride {
   type: 'auto' | 'url' | 'emoji' | 'text';
@@ -115,8 +100,6 @@ export interface Settings {
   };
   search: {
     enabled: boolean;
-    engine: SearchEngineId;
-    customUrl: string;
     newTab: boolean;
     /** Offer matching shortcuts while typing. */
     quickSwitch: boolean;
